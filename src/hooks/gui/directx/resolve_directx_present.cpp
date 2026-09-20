@@ -12,6 +12,7 @@
 
 namespace {
 	constexpr size_t kPresentVtableIndex = 8;
+	constexpr size_t kResizeBuffersVtableIndex = 13;
 	
 	constexpr wchar_t kDummyClassName[] = L"GrannyPracticeDxProbe";
 	
@@ -48,13 +49,17 @@ namespace {
 	};
 }
 
-extern "C" uint64_t resolve_directx_address(void) {
-	static uint64_t cached = 0;
-	if (cached != 0) { return cached; }
+namespace {
+	uint64_t cached_present = 0;
+	uint64_t cached_resize_buffers = 0;
+}
+
+static bool resolve_swap_chain_vtable(void) {
+	if (cached_present != 0 && cached_resize_buffers != 0) { return true; }
 
 	// dummy window
 	DummyWindow window;
-	if (window.get() == nullptr) { return 0; }
+	if (window.get() == nullptr) { return false; }
 
 	
 	// configuration for d3d11 so that we can call CreateD3D11 properly
@@ -113,14 +118,25 @@ extern "C" uint64_t resolve_directx_address(void) {
 		}
 
 		void** vtable = *reinterpret_cast<void***>(swap_chain);
-		cached = reinterpret_cast<uint64_t>(vtable[kPresentVtableIndex]);
+		cached_present = reinterpret_cast<uint64_t>(vtable[kPresentVtableIndex]);
+		cached_resize_buffers = reinterpret_cast<uint64_t>(vtable[kResizeBuffersVtableIndex]);
 
 		if (context != nullptr) { context->Release(); }
 		if (device != nullptr)  { device->Release(); }
 		swap_chain->Release();
 
-		return cached;
+		return true;
 	}
 
-	return 0;
+	return false;
+}
+
+extern "C" uint64_t resolve_directx_address(void) {
+	if (!resolve_swap_chain_vtable()) { return 0; }
+	return cached_present;
+}
+
+extern "C" uint64_t resolve_directx_resize_buffers_address(void) {
+	if (!resolve_swap_chain_vtable()) { return 0; }
+	return cached_resize_buffers;
 }

@@ -1,3 +1,11 @@
+#define NK_INCLUDE_DEFAULT_ALLOCATOR
+#define NK_INCLUDE_VERTEX_BUFFER_OUTPUT
+#define NK_INCLUDE_FONT_BAKING
+#define NK_INCLUDE_DEFAULT_FONT
+#define NK_IMPLEMENTATION
+#define NK_D3D11_IMPLEMENTATION
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <Windows.h>
@@ -6,6 +14,7 @@
 
 #include "hooks/AI_Granny/ai_granny.h"
 #include "granny/core/core.h"
+#include "lib/nuklear/nuklear_d3d11.h"
 #include "hooks/gui/directx/resolve_directx_present.h"
 #include "hooks/gui/gui.h"
 #include "hooks/gui/wndproc/resolve_wndproc.h"

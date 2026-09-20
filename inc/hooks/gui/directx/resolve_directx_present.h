@@ -24,7 +24,17 @@ typedef HRESULT(__stdcall* IDXGISwapChain_Present)(
 
 
 
+typedef HRESULT(__stdcall* IDXGISwapChain_ResizeBuffers)(
+    IDXGISwapChain* pSwapChain,
+    UINT BufferCount,
+    UINT Width,
+    UINT Height,
+    DXGI_FORMAT NewFormat,
+    UINT SwapChainFlags
+);
+
 uint64_t resolve_directx_address(void);
+uint64_t resolve_directx_resize_buffers_address(void);
 
 #ifdef __cplusplus
 }
