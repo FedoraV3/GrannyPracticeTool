@@ -3,9 +3,8 @@
 
 #include <stdbool.h>
 
-extern void* granny_ai_ptr;
-
 #define GRANNY_AI_FIXED_UPDATE_RVA 0x1bde60
 bool ai_granny_hook_install();
+void* get_ai_granny_ptr();
 
 #endif

@@ -17,6 +17,9 @@ d3d11_dep = cc.find_library('d3d11')
 
 subdir('src')
 
+# so we can use DEBUG preprocessor flag so that we can debug
+debug = get_option('debug') ? ['-DDEBUG'] : []
+
 shared_library(
 	'grannylegacypractice',
 	src_files,

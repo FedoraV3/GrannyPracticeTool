@@ -30,18 +30,22 @@ DWORD WINAPI CheatMain(LPVOID arg) {
 	core_init();
 	
 	// just allocconsole for testing for now
-	AllocConsole();
+	// come back to this lets just wrap this around DEBUG
+	#ifdef DEBUG
+		AllocConsole();
+		
+		FILE *stream;
+		
+		freopen_s(&stream, "CONIN$", "r", stdin);
+		freopen_s(&stream, "CONOUT$", "w", stdout);
+		freopen_s(&stream, "CONOUT$", "w", stderr);
+		
+		printf("DirectX Present Address: 0x%llX\n", (unsigned long long)resolve_directx_address());
+		printf("WndProc address: 0x%llX\n", (unsigned long long)resolve_wndproc_address());
+		
+		printf("Attempting to hook GUI into game\n");
+	#endif
 	
-	FILE *stream;
-	
-	freopen_s(&stream, "CONIN$", "r", stdin);
-	freopen_s(&stream, "CONOUT$", "w", stdout);
-	freopen_s(&stream, "CONOUT$", "w", stderr);
-	
-	printf("DirectX Present Address: 0x%llX\n", (unsigned long long)resolve_directx_address());
-	printf("WndProc address: 0x%llX\n", (unsigned long long)resolve_wndproc_address());
-	
-	printf("Attempting to hook GUI into game\n");
 	
 	return 1;
 }

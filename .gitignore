@@ -49,3 +49,6 @@ subprojects/*
 *.bak
 .DS_Store
 Thumbs.db
+
+# remove the decompiler output unfortauntely
+out_decompilers/

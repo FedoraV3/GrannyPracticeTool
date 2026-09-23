@@ -6,6 +6,7 @@
 
 typedef void (*AI_Granny_FixedUpdate)(void *granny_ai_ptr);
 
+AI_Granny_Start orig_ai_granny_start = NULL;
 AI_Granny_FixedUpdate orig_fixed_update = NULL;
 void* granny_ai_ptr = NULL;
 
@@ -21,6 +22,13 @@ static void intercepted_ai_granny_fixed_update(void *current_granny_ai_ptr) {
 	}
 	
 	return orig_fixed_update(current_granny_ai_ptr);
+}
+
+// right here i think making it so that only one function accesses granny_ai_ptr is much
+// more safer so i just made this function
+// 0x0 if not found
+void* get_ai_granny_ptr() {
+	return granny_ai_ptr;
 }
 
 bool ai_granny_hook_install() {

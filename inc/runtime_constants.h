@@ -35,6 +35,16 @@ extern bool granny_ai_animations_resolved;
 #define pepper_animation_offset 0x60
 #define frozen_animation_offset 0x68
 
+// offsets
+#define GRANNY_AI_START 0x1C2090
+#define UNITYENGINE_THIS_DESTROY 0x727830
+
+// func prototypes
+typedef int64_t (__fastcall *AI_Granny_Start)(void* granny_ai_ptr);
+// if Main Camera is destroyed, motherfucker
+typedef int64_t (__fastcall *UnityEngine_Object_Destroy)(void* destroyed_address);
+
+
 extern void* idle_animation;
 extern void* walk_anim_animation;
 extern void* jumpscare_player_animation;

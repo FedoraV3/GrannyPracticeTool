@@ -144,7 +144,7 @@ static void release_render_target() {
 void render_frame() {
 	if (nk_begin(nuklear_ctx, "Granny Legacy Test", nk_rect(50, 50, 220, 220),
 	    NK_WINDOW_BORDER|NK_WINDOW_MOVABLE|NK_WINDOW_TITLE|NK_WINDOW_MINIMIZABLE|NK_WINDOW_SCALABLE)) {
-		
+		nk_layout_row_static(nuklear_ctx, 30, 80, 1);
 		if (nk_button_label(nuklear_ctx, "Test button")) {
 			printf("Hello world!\n");
 		}
