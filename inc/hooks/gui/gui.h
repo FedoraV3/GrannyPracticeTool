@@ -16,10 +16,17 @@ extern "C" {
 #include <stdbool.h>
 #include <inttypes.h>
 
+#include "hooks/gui/directx/resolve_directx_present.h"
+
+
 extern uint8_t is_gui_open;
 extern IDXGISwapChain* d3d11_swap_chain;
 extern ID3D11DeviceContext* d3d11_dev_ctx;
 extern ID3D11Device* d3d11_dev;
+
+extern IDXGISwapChain_Present original_present;
+extern IDXGISwapChain_ResizeBuffers original_resize_buffers;
+extern WNDPROC original_wndproc;
 
 bool gui_install();
 void render_frame();

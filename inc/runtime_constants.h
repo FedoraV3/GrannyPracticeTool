@@ -36,14 +36,17 @@ extern bool granny_ai_animations_resolved;
 #define frozen_animation_offset 0x68
 
 // offsets
+#define GAMEOVERS_GAMEOVERSTART 0x2197D0
 #define GRANNY_AI_START 0x1C2090
-#define UNITYENGINE_THIS_DESTROY 0x727830
+#define GRANNY_AI_FIXED_UPDATE_RVA 0x1bde60
+#define UNITYENGINE_THIS_GET_NAME 0x728990
+#define UNITYENGINE_SCENE_MANAGEMENT_SCENEMANAGER_LOADSCENE 0x7436d0
+#define IL2CPP_THREAD_ATTACH 0xB0940
+#define IL2CPP_THREAD_DETACH 0xB0960
+#define IL2CPP_DOMAIN_GET 0xAFC00
 
 // func prototypes
 typedef int64_t (__fastcall *AI_Granny_Start)(void* granny_ai_ptr);
-// if Main Camera is destroyed, motherfucker
-typedef int64_t (__fastcall *UnityEngine_Object_Destroy)(void* destroyed_address);
-
 
 extern void* idle_animation;
 extern void* walk_anim_animation;

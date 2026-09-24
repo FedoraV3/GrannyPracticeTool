@@ -1,7 +1,7 @@
 #include "hooks/AI_Granny/ai_granny.h"
 #include <stdlib.h>
 #include "MinHook.h"
-#include "granny/core/core.h"
+#include "core/core.h"
 #include "runtime_constants.h"
 
 typedef void (*AI_Granny_FixedUpdate)(void *granny_ai_ptr);
@@ -29,6 +29,11 @@ static void intercepted_ai_granny_fixed_update(void *current_granny_ai_ptr) {
 // 0x0 if not found
 void* get_ai_granny_ptr() {
 	return granny_ai_ptr;
+}
+
+// encapsulation
+void invalidate_ai_granny_ptr() {
+	granny_ai_ptr = NULL;
 }
 
 bool ai_granny_hook_install() {

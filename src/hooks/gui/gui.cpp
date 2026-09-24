@@ -7,7 +7,7 @@
 
 
 #include "hooks/gui/gui.h"
-#include "granny/core/core.h"
+#include "core/core.h"
 #include "hooks/gui/directx/resolve_directx_present.h"
 #include "hooks/gui/wndproc/resolve_wndproc.h"
 extern "C" {

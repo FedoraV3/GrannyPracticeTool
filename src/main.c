@@ -13,7 +13,7 @@
 #include <MinHook.h>
 
 #include "hooks/AI_Granny/ai_granny.h"
-#include "granny/core/core.h"
+#include "core/core.h"
 #include "lib/nuklear/nuklear_d3d11.h"
 #include "hooks/gui/directx/resolve_directx_present.h"
 #include "hooks/gui/gui.h"
@@ -21,32 +21,25 @@
 
 DWORD WINAPI CheatMain(LPVOID arg) {
 	(void)arg;
-
-	if (MH_Initialize() != MH_OK) { return 0; }
-	if (!gui_install()) { return 0; }
-	if (!ai_granny_hook_install()) { return 0; }
-
-	// when hooks are installed that means we have "funneled the troops in" so now we can init core
-	core_init();
+	
+	if (core_init() != 1)
+		return 0;
 	
 	// just allocconsole for testing for now
 	// come back to this lets just wrap this around DEBUG
-	#ifdef DEBUG
-		AllocConsole();
+	AllocConsole();
 		
-		FILE *stream;
+	FILE *stream;
 		
-		freopen_s(&stream, "CONIN$", "r", stdin);
-		freopen_s(&stream, "CONOUT$", "w", stdout);
-		freopen_s(&stream, "CONOUT$", "w", stderr);
+	freopen_s(&stream, "CONIN$", "r", stdin);
+	freopen_s(&stream, "CONOUT$", "w", stdout);
+	freopen_s(&stream, "CONOUT$", "w", stderr);
 		
-		printf("DirectX Present Address: 0x%llX\n", (unsigned long long)resolve_directx_address());
-		printf("WndProc address: 0x%llX\n", (unsigned long long)resolve_wndproc_address());
+	fprintf(stderr, "DirectX Present Address: 0x%llX\n", (unsigned long long)resolve_directx_address());
+	fprintf(stderr, "WndProc address: 0x%llX\n", (unsigned long long)resolve_wndproc_address());
 		
-		printf("Attempting to hook GUI into game\n");
-	#endif
-	
-	
+	fprintf(stderr, "Attempting to hook GUI into game\n");
+		
 	return 1;
 }
 

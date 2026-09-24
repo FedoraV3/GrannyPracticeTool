@@ -1,1 +1,1 @@
-CompileFlags: {CompilationDatabase: build\meson.run.win32.x86_64.Local}
+CompileFlags: {CompilationDatabase: build\meson.debug.win32.x86_64.Local}

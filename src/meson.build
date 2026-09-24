@@ -4,6 +4,8 @@ src_files = files(
 	'hooks/gui/wndproc/resolve_wndproc.c',
 	'hooks/gui/gui.cpp',
 	'runtime_constants.c',
-	'granny/core/core.c',
+	'core/core.c',
 	'hooks/AI_Granny/ai_granny.c',
+	'granny/unityengine/ue_object.c',
+	'hooks/unity/unityengine.c',
 )
