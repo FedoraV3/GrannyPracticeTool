@@ -15,9 +15,7 @@ static int64_t __fastcall detour_ue_scenemanager_load_scene(System_String_o *sce
 		fprintf(stderr, "AI Granny Invalidated\n");
 		invalidate_ai_granny_ptr();
 	}
-	
-	fwprintf(stdout, L"Scene loaded: %s\n", &scene_name->fields.first_char);
-	
+		
 	return orig_ue_scenemanager_load_scene(scene_name, method);
 }
 

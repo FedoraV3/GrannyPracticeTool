@@ -6,47 +6,55 @@
 #include "granny/unityengine/typedefs.h"
 #include <string.h>
 #include <Windows.h>
+#include <stringapiset.h>
+#include <winnls.h>
 
 // returns a null terminated string
-char *ue_obj_get_obj_name(System_String_o* str) {	
-	char* buffer = malloc(str->fields.str_length);
-	if (buffer == NULL) {
-		free(str); 
-		return buffer; 
+char *ue_obj_get_obj_name(System_String_o *str) {
+	int wlen = str->fields.str_length;
+	LPCWCH wsrc = (LPCWCH)&str->fields.first_char;
+
+	if (wlen == 0) {
+		char *empty = malloc(1);
+		if (empty) empty[0] = '\0';
+		return empty;
 	}
-	
-	// copy the string to the new char
-	/*
-	for (int i = 0; i < str->fields.str_length; i++) {
-		printf("%c", ((uint16_t*)&str->fields.first_char)[i]);
+
+	int size = WideCharToMultiByte(
+		CP_UTF8, 
+		0, 
+		wsrc, 
+		wlen, 
+		NULL, 
+		0, 
+		NULL, 
+		NULL
+	);
+	if (size == 0) return NULL;
+
+	char *buffer = malloc(size + 1);
+	if (!buffer) return NULL;
+
+	if (WideCharToMultiByte(
+		CP_UTF8, 
+		0, 
+		wsrc, 
+		wlen, 
+		buffer, 
+		size, 
+		NULL, 
+		NULL
+	) == 0) {
+		free(buffer);
+		return NULL;
 	}
-	*/
-	
-	// we don't need to use memcpy_s since they both will be always the same size
-	// if im wrong haha then boom my program crashes
-	memcpy(buffer, &str->fields.first_char, str->fields.str_length);
-	
-	// i wrote this and commented it i didnt use it hahahahahaha
-	// free(buffer);
+
+	buffer[size] = '\0';
 	return buffer;
 }
 
-uint16_t *create_ue_str_from_str(char* buffer, size_t buffer_s) {
-	uint16_t *str = malloc(buffer_s);
-	if (str == NULL)
-		return str;
-	
-	if (MultiByteToWideChar(
-		CP_ACP, 
-		MB_PRECOMPOSED, 
-		buffer, 
-		buffer_s, 
-		str, 
-		buffer_s
-	) == 0) {
-		free(str);
-		return NULL;
-	}
-	
-	return str;
+// requires a null terminated string
+void* create_ue_string(char* str) {
+	// typedef void* (*il2cpp_string_new_t)(const char*);
+	return ((il2cpp_string_new_t)(game_assembly_base + IL2CPP_STRING_NEW))(str);
 }

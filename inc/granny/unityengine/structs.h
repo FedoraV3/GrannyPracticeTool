@@ -15,8 +15,8 @@ __declspec(align(8)) struct System_String_Fields // sizeof=0x8
 // need this to make it 24
 typedef struct System_String_o // sizeof=0x18
 {
-	 void* unused;
-	 void* unused2;
+	 void* klass;
+	 void* monitor;
      struct System_String_Fields fields;
 } System_String_o;
 

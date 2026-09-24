@@ -23,5 +23,8 @@ typedef void* (*il2cpp_domain_get_t)(void);
 typedef void* (*il2cpp_thread_attach_t)(void* domain);
 typedef void  (*il2cpp_thread_detach_t)(void* thread);
 
+// il2cpp
+typedef void* (*il2cpp_string_new_t)(const char*);
+
 
 #endif /* INC_GRANNY_UNITYENGINE_TYPEDEFS_H_ */

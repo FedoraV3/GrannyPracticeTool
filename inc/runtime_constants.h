@@ -44,6 +44,7 @@ extern bool granny_ai_animations_resolved;
 #define IL2CPP_THREAD_ATTACH 0xB0940
 #define IL2CPP_THREAD_DETACH 0xB0960
 #define IL2CPP_DOMAIN_GET 0xAFC00
+#define IL2CPP_STRING_NEW 0xb0910
 
 // func prototypes
 typedef int64_t (__fastcall *AI_Granny_Start)(void* granny_ai_ptr);
