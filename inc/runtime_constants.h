@@ -40,14 +40,25 @@ extern bool granny_ai_animations_resolved;
 #define GRANNY_AI_START 0x1C2090
 #define GRANNY_AI_FIXED_UPDATE_RVA 0x1bde60
 #define UNITYENGINE_THIS_GET_NAME 0x728990
+#define UNITYENGINE_GAMEOBJECT_GET_TRANSFORM 0x722220
+#define UNITYENGINE_COMPONENT_GET_GAMEOBJECT 0x71f0c0
+// these are the real get/set_position, not the *_Injected icall thunks right above them
+// (0x748ee0 / 0x7496f0) which take (transform, vec*) with no return buffer
+#define UNITYENGINE_TRANSFORM_GET_POSITION 0x748f30
+#define UNITYENGINE_TRANSFOM_SET_POSITION 0x749740
 #define UNITYENGINE_SCENE_MANAGEMENT_SCENEMANAGER_LOADSCENE 0x7436d0
 #define IL2CPP_THREAD_ATTACH 0xB0940
 #define IL2CPP_THREAD_DETACH 0xB0960
 #define IL2CPP_DOMAIN_GET 0xAFC00
 #define IL2CPP_STRING_NEW 0xb0910
 
+// dont know why they put the player position in ai granny
+#define AI_GRANNY_PLAYER_POS 0x288
+
 // func prototypes
-typedef int64_t (__fastcall *AI_Granny_Start)(void* granny_ai_ptr);
+typedef void (__fastcall *AI_Granny_Start)(void *granny_ai_ptr);
+typedef void (__fastcall *AI_Granny_FixedUpdate)(void *granny_ai_ptr);
+
 
 extern void* idle_animation;
 extern void* walk_anim_animation;

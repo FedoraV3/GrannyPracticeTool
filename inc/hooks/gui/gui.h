@@ -8,16 +8,15 @@
 #ifndef INC_HOOKS_GUI_GUI_H_
 #define INC_HOOKS_GUI_GUI_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include <d3d11.h>
 #include <stdbool.h>
 #include <inttypes.h>
 
 #include "hooks/gui/directx/resolve_directx_present.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 extern uint8_t is_gui_open;
 extern IDXGISwapChain* d3d11_swap_chain;

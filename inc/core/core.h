@@ -2,12 +2,10 @@
 #define CORE_H
 
 #include <Windows.h>
-#include "lib/nuklear/nuklear.h"
+#include <stdint.h>
 #include "runtime_constants.h"
 
-extern void* game_assembly_base;
-extern struct nk_user_font *nuklear_font;
-extern struct nk_context *nuklear_ctx;
+extern uint8_t* game_assembly_base;
 
 int core_init();
 	

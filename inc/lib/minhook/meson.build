@@ -10,5 +10,5 @@ minhook_lib = static_library(
 		'src/hde/hde64.c',
 	),
 	include_directories: minhook_inc,
-	c_args: ['-Wno-unused-parameter'],
+	c_args: cc.get_supported_arguments('-Wno-unused-parameter'),
 )

@@ -1,5 +1,6 @@
 src_files = files(
 	'main.c',
+	'granny/granny_teleport.c',
 	'hooks/gui/directx/resolve_directx_present.cpp',
 	'hooks/gui/wndproc/resolve_wndproc.c',
 	'hooks/gui/gui.cpp',
@@ -7,5 +8,6 @@ src_files = files(
 	'core/core.c',
 	'hooks/AI_Granny/ai_granny.c',
 	'granny/unityengine/ue_object.c',
+	'granny/unityengine/ue_vector3.c',
 	'hooks/unity/unityengine.c',
 )
