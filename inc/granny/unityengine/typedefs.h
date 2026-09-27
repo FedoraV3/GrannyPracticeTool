@@ -21,6 +21,7 @@ typedef UnityEngine_Vector3_o* (__fastcall *UnityEngine_Transform_Get_Position)(
 typedef void (__fastcall *UnityEngine_Transform_Set_Position)(void *transform, UnityEngine_Vector3_o *vec_buf, void* method);
 typedef void* (__fastcall *UnityEngine_GameObject_Get_Transform)(void* game_object, void* method);
 typedef void* (__fastcall *UnityEngine_Component_Get_GameObject)(void* component, void* method);
+typedef void*  (__fastcall *UnityEngine_Component_Get_Transform)(void* transform, void* method);
 
 // il2cpp
 // so that we can call functions in the mod thread

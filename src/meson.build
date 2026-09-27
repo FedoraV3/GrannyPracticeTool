@@ -10,4 +10,5 @@ src_files = files(
 	'granny/unityengine/ue_object.c',
 	'granny/unityengine/ue_vector3.c',
 	'hooks/unity/unityengine.c',
+	'events/handler.c',
 )

@@ -11,7 +11,7 @@
 #include "unityengine/structs.h"
 #include <stdbool.h>
 
-bool get_granny_position(UnityEngine_Vector3_o *out_pos);
+void get_granny_position(UnityEngine_Vector3_o *out_pos);
 void teleport_granny_to_position(UnityEngine_Vector3_o *pos);
 
 

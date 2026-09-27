@@ -3,12 +3,18 @@
 #include "hooks/gui/wndproc/resolve_wndproc.h"
 #include "MinHook.h"
 #include <d3d11.h>
+#include <mutex>
 
 #include "imgui.h"
 #include "imgui_internal.h"
+
 #include "cimgui.h"
 #include "imgui_impl_dx11.h"
 #include "imgui_impl_win32.h"
+
+#include "events/handler.h"
+#include "granny/unityengine/structs.h"
+#include "hooks/AI_Granny/ai_granny.h"
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -24,26 +30,37 @@ ID3D11RenderTargetView* d3d11_rtv = nullptr;
 uint8_t is_gui_open = 1;
 static bool imgui_ready = false;
 
+// wndproc runs on the game's main thread and present runs on unity's render thread,
+// both touch the imgui context so everything imgui goes through this lock.
+// recursive because imgui's handler calls ReleaseCapture() on mouse up, which re-enters
+// our wndproc on the same thread with WM_CAPTURECHANGED while we still hold it
+static std::recursive_mutex imgui_mutex;
+
 static LRESULT CALLBACK intercepted_wnd_proc(
 	HWND hwnd,
 	UINT uMsg,
 	WPARAM wParam,
 	LPARAM lParam
 ) {
-	if (uMsg == WM_KEYDOWN && wParam == VK_INSERT && !(lParam & (1 << 30))) {
-		is_gui_open = !is_gui_open;
-	}
+	{
+		std::lock_guard<std::recursive_mutex> lock(imgui_mutex);
 
-	if (is_gui_open && imgui_ready) {
-		if (ImGui_ImplWin32_WndProcHandler(hwnd, uMsg, wParam, lParam)) {
-			return 1;
+		if (uMsg == WM_KEYDOWN && wParam == VK_INSERT && !(lParam & (1 << 30))) {
+			is_gui_open = !is_gui_open;
 		}
 
-		if (igGetIO_Nil()->WantCaptureMouse && uMsg >= WM_MOUSEFIRST && uMsg <= WM_MOUSELAST) {
-			return 1;
+		if (is_gui_open && imgui_ready) {
+			if (ImGui_ImplWin32_WndProcHandler(hwnd, uMsg, wParam, lParam)) {
+				return 1;
+			}
+
+			if (igGetIO_Nil()->WantCaptureMouse && uMsg >= WM_MOUSEFIRST && uMsg <= WM_MOUSELAST) {
+				return 1;
+			}
 		}
 	}
 
+	// never call into the game while holding the lock
 	return original_wndproc(hwnd, uMsg, wParam, lParam);
 }
 
@@ -93,7 +110,16 @@ static bool init_imgui(IDXGISwapChain* pSwapChain) {
 
 void render_frame() {
 	igBegin("Granny Legacy Practice", nullptr, 0);
-	igTextUnformatted("hello world", nullptr);
+	igTextUnformatted("hello world waoikejhr42iuevyb4237iu4v6by", nullptr);
+	if (igButton("Set As Granny TP", ImVec2_c{ 0, 0})) {
+		if (get_ai_granny_transform() != nullptr) {
+			UnityEngine_Vector3_o pos = curr_granny_ai->transform_pos;
+			pos.fields.x -= 10;
+			pos.fields.z -= 10;
+
+			queue_new_event(GRANNY_SET_POS, GRANNY, &pos, sizeof(pos));
+		}
+	}
 	igEnd();
 }
 
@@ -102,31 +128,37 @@ static HRESULT __stdcall intercepted_idxgiswapchain_present(
 	UINT SyncInterval,
 	UINT Flags
 ) {
-	if (d3d11_dev == nullptr && !init_imgui(pSwapChain)) {
-		return original_present(pSwapChain, SyncInterval, Flags);
+	{
+		std::lock_guard<std::recursive_mutex> lock(imgui_mutex);
+
+		if (d3d11_dev == nullptr) {
+			init_imgui(pSwapChain);
+		}
+
+		if (imgui_ready && is_gui_open && create_render_target(pSwapChain)) {
+			ImGui_ImplDX11_NewFrame();
+			ImGui_ImplWin32_NewFrame();
+			igNewFrame();
+
+			render_frame();
+
+			igRender();
+
+			ID3D11RenderTargetView* old_rtv = nullptr;
+			ID3D11DepthStencilView* old_dsv = nullptr;
+			d3d11_dev_ctx->OMGetRenderTargets(1, &old_rtv, &old_dsv);
+			d3d11_dev_ctx->OMSetRenderTargets(1, &d3d11_rtv, nullptr);
+
+			ImGui_ImplDX11_RenderDrawData(igGetDrawData());
+
+			d3d11_dev_ctx->OMSetRenderTargets(1, &old_rtv, old_dsv);
+			if (old_rtv != nullptr) { old_rtv->Release(); }
+			if (old_dsv != nullptr) { old_dsv->Release(); }
+		}
 	}
 
-	if (imgui_ready && is_gui_open && create_render_target(pSwapChain)) {
-		ImGui_ImplDX11_NewFrame();
-		ImGui_ImplWin32_NewFrame();
-		igNewFrame();
-
-		render_frame();
-
-		igRender();
-
-		ID3D11RenderTargetView* old_rtv = nullptr;
-		ID3D11DepthStencilView* old_dsv = nullptr;
-		d3d11_dev_ctx->OMGetRenderTargets(1, &old_rtv, &old_dsv);
-		d3d11_dev_ctx->OMSetRenderTargets(1, &d3d11_rtv, nullptr);
-
-		ImGui_ImplDX11_RenderDrawData(igGetDrawData());
-
-		d3d11_dev_ctx->OMSetRenderTargets(1, &old_rtv, old_dsv);
-		if (old_rtv != nullptr) { old_rtv->Release(); }
-		if (old_dsv != nullptr) { old_dsv->Release(); }
-	}
-
+	// unlock before presenting, dxgi can SendMessage to the game window inside Present
+	// and wait on the main thread, which might be waiting on our lock in the wndproc
 	return original_present(pSwapChain, SyncInterval, Flags);
 }
 
@@ -138,7 +170,11 @@ static HRESULT __stdcall intercepted_idxgiswapchain_resize_buffers(
 	DXGI_FORMAT NewFormat,
 	UINT SwapChainFlags
 ) {
-	release_render_target();
+	{
+		std::lock_guard<std::recursive_mutex> lock(imgui_mutex);
+		release_render_target();
+	}
+
 	return original_resize_buffers(pSwapChain, BufferCount, Width, Height, NewFormat, SwapChainFlags);
 }
 
