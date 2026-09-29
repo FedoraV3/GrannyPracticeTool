@@ -5,4 +5,6 @@
 #ifndef GRANNYPRACTICETOOL_PARSER_H
 #define GRANNYPRACTICETOOL_PARSER_H
 
+char* create_cfg_json();
+
 #endif // GRANNYPRACTICETOOL_PARSER_H

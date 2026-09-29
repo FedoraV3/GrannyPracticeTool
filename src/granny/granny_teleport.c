@@ -16,12 +16,11 @@ UnityEngine_Vector3_o last_granny_teleport = {0};
 
 // any unity function is required to be called on the main thread of unity game!
 void get_granny_position(UnityEngine_Vector3_o *out_pos) {
-	void* granny_transform = get_ai_granny_transform();
-
-	// get_position returns a 12 byte Vector3 by value, so the game writes it into a buffer
-	// the caller owns (hidden return pointer in rcx), it has to point at real memory
-//	typedef UnityEngine_Vector3_o* (__fastcall *UnityEngine_Transform_Get_Position)(UnityEngine_Vector3_o *vec_buf, void* transform, void* method);
-	((UnityEngine_Transform_Get_Position)(game_assembly_base + UNITYENGINE_TRANSFORM_GET_POSITION))(out_pos, granny_transform, NULL);
+	// yeah we have snapshot of the last granny update instance so lets just
+	// deep copy because the position will be changed in the next update
+	out_pos->fields.x = curr_granny_ai->transform_pos.fields.x;
+	out_pos->fields.y = curr_granny_ai->transform_pos.fields.y;
+	out_pos->fields.z = curr_granny_ai->transform_pos.fields.z;
 }
 
 void teleport_granny_to_position(UnityEngine_Vector3_o *pos) {

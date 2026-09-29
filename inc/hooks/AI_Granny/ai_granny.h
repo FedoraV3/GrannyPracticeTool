@@ -9,6 +9,7 @@ typedef struct granny_ai_info {
 	void* granny_ai_ptr;
 	void* granny_ai_transform;
 	UnityEngine_Vector3_o transform_pos;
+	UnityEngine_Vector3_o player_transform_pos;
 } granny_ai_info;
 
 #ifdef __cplusplus

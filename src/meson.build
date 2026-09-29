@@ -11,4 +11,9 @@ src_files = files(
 	'granny/unityengine/ue_vector3.c',
 	'hooks/unity/unityengine.c',
 	'events/handler.c',
+	'config/parser/parser.c',
+	'config/writer/writer.c',
+	'config/loader.c',
+	'config/saver.c',
+	'config/data.c'
 )
