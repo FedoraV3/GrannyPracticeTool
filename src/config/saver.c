@@ -12,6 +12,15 @@
 #include <stdlib.h>
 #include <string.h>
 
+// adds { "x": .., "y": .., "z": .. } under key
+static bool add_vec3(cJSON* root, const char* key, const UnityEngine_Vector3_o* v) {
+	cJSON* obj = cJSON_AddObjectToObject(root, key);
+	return obj
+		&& cJSON_AddNumberToObject(obj, "x", v->fields.x)
+		&& cJSON_AddNumberToObject(obj, "y", v->fields.y)
+		&& cJSON_AddNumberToObject(obj, "z", v->fields.z);
+}
+
 // builds the json from the values in data.h, pwd is always the first object
 static char* build_cfg_json(void) {
 	cJSON* root = cJSON_CreateObject();
@@ -19,8 +28,8 @@ static char* build_cfg_json(void) {
 		return NULL;
 
 	if (!cJSON_AddStringToObject(root, "pwd", cfg_pwd)
-		|| !cJSON_AddNumberToObject(root, "player_tp", player_tp_pos)
-		|| !cJSON_AddNumberToObject(root, "granny_tp", granny_tp_pos)) {
+		|| !add_vec3(root, "player_tp", &player_tp_pos)
+		|| !add_vec3(root, "granny_tp", &granny_tp_pos)) {
 		cJSON_Delete(root);
 		return NULL;
 	}

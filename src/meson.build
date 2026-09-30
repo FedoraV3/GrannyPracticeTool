@@ -1,6 +1,7 @@
 src_files = files(
 	'main.c',
 	'granny/granny_teleport.c',
+	'granny/player_teleport.c',
 	'hooks/gui/directx/resolve_directx_present.cpp',
 	'hooks/gui/wndproc/resolve_wndproc.c',
 	'hooks/gui/gui.cpp',
@@ -15,5 +16,5 @@ src_files = files(
 	'config/writer/writer.c',
 	'config/loader.c',
 	'config/saver.c',
-	'config/data.c'
+	'config/data.c',
 )

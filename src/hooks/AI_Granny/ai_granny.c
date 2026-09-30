@@ -3,6 +3,7 @@
 #include "core/core.h"
 #include "events/handler.h"
 #include "granny/granny_teleport.h"
+#include "granny/player_teleport.h"
 #include "granny/unityengine/typedefs.h"
 #include "runtime_constants.h"
 
@@ -31,7 +32,9 @@ static void intercepted_ai_granny_fixed_update(void *current_granny_ai_ptr, cons
 	// update the curr_granny_ai struct here (no need for ai ptr and ai transform
 	// -since that is dealt with already)
 	if (curr_granny_ai->granny_ai_transform != NULL)
-		get_granny_position(&curr_granny_ai->transform_pos);
+		((UnityEngine_Transform_Get_Position)(game_assembly_base + UNITYENGINE_TRANSFORM_GET_POSITION))(&curr_granny_ai->transform_pos, curr_granny_ai->granny_ai_transform, NULL);
+
+	curr_granny_ai->player_transform_pos = *(UnityEngine_Vector3_o*)((uint8_t*)current_granny_ai_ptr + AI_GRANNY_PLAYER_POS);
 
 
 	// update granny current state
@@ -54,6 +57,10 @@ static void intercepted_ai_granny_start(void *current_granny_ai_ptr, const void 
 	// get granny's transform
 	// get gameobject then get transform
 	curr_granny_ai->granny_ai_transform = ((UnityEngine_Component_Get_Transform)(game_assembly_base + UNITYENGINE_COMPONENT_GET_TRANSFORM))(current_granny_ai_ptr, NULL);
+	// same thing with player transform
+	// .. but more direct
+	curr_granny_ai->player_transform = *(void**)((uint8_t*)current_granny_ai_ptr + AI_GRANNY_PLAYER_TRANSFORM);
+
 	orig_ai_granny_start(current_granny_ai_ptr, method);
 }
 
@@ -68,13 +75,20 @@ void* get_ai_granny_transform() {
 	return curr_granny_ai->granny_ai_transform;
 }
 
+/*
+typedef struct granny_ai_info {
+	void* granny_ai_ptr;
+	void* granny_ai_transform;
+	void* player_transform;
+	UnityEngine_Vector3_o transform_pos;
+	UnityEngine_Vector3_o player_transform_pos;
+} granny_ai_info;
+*/
+
 // encapsulation (no longer)
 void invalidate_ai_granny_ptr() {
 	// 0 out the entire granny ai struct
 	invalidate_curr_granny_ai();
-	// questioning whether i should calloc and keep it for the lifetime of the program
-	// yeah lets do it
-
 	granny_ai_animations_resolved = false;
 }
 

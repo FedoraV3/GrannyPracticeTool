@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
 // configs are tiny, anything bigger than this is not ours
 #define MAX_CFG_SIZE (64 * 1024)
@@ -68,6 +69,20 @@ static bool get_float(const cJSON* root, const char* key, float* out) {
 	return false;
 }
 
+// vectors are stored as { "x": .., "y": .., "z": .. }
+static bool get_vec3(const cJSON* root, const char* key, UnityEngine_Vector3_o* out) {
+	const cJSON* obj = cJSON_GetObjectItemCaseSensitive(root, key);
+	if (!cJSON_IsObject(obj))
+		return false;
+
+	UnityEngine_Vector3_o v;
+	if (!get_float(obj, "x", &v.fields.x) || !get_float(obj, "y", &v.fields.y) || !get_float(obj, "z", &v.fields.z))
+		return false;
+
+	*out = v;
+	return true;
+}
+
 bool load_cfg(const char* cfg_name) {
 	if (!cfg_name || !*cfg_name)
 		return false;
@@ -100,8 +115,8 @@ bool load_cfg(const char* cfg_name) {
 		return false;
 	}
 
-	float p_pos, g_pos;
-	bool ok = get_float(root, "player_tp", &p_pos) && get_float(root, "granny_tp", &g_pos);
+	UnityEngine_Vector3_o p_pos, g_pos;
+	bool ok = get_vec3(root, "player_tp", &p_pos) && get_vec3(root, "granny_tp", &g_pos);
 	cJSON_Delete(root);
 
 	if (!ok)
@@ -113,7 +128,7 @@ bool load_cfg(const char* cfg_name) {
 }
 
 void unload_cfg(void) {
-	// 0.0 is impossible
-	player_tp_pos = 0.0f;
-	granny_tp_pos = 0.0f;
+	// 0,0,0 is impossible
+	player_tp_pos = (UnityEngine_Vector3_o){0};
+	granny_tp_pos = (UnityEngine_Vector3_o){0};
 }

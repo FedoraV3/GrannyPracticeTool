@@ -11,6 +11,7 @@
 typedef enum EVENTS {
 	GRANNY_SET_POS = 0x00,
 	PLAYER_SET_POS = 0x01,
+	ALL_SET_POS = 0x02,
 } EVENTS;
 
 typedef enum EVENT_TYPE {

@@ -12,7 +12,9 @@
 #include "imgui_impl_dx11.h"
 #include "imgui_impl_win32.h"
 
+#include "config/data.h"
 #include "events/handler.h"
+#include "granny/player_teleport.h"
 #include "granny/unityengine/structs.h"
 #include "hooks/AI_Granny/ai_granny.h"
 
@@ -111,13 +113,32 @@ static bool init_imgui(IDXGISwapChain* pSwapChain) {
 void render_frame() {
 	igBegin("Granny Legacy Practice", nullptr, 0);
 	igTextUnformatted("hello world waoikejhr42iuevyb4237iu4v6by", nullptr);
-	if (igButton("Set As Granny TP", ImVec2_c{ 0, 0})) {
-		if (get_ai_granny_transform() != nullptr) {
-			UnityEngine_Vector3_o pos = curr_granny_ai->transform_pos;
-			pos.fields.x -= 10;
-			pos.fields.z -= 10;
+	// if (igButton("Set As Granny TP", ImVec2_c{ 0, 0})) {
+	// 	if (get_ai_granny_transform() != nullptr) {
+	// 		UnityEngine_Vector3_o pos = curr_granny_ai->transform_pos;
+	// 		pos.fields.x -= 10;
+	// 		pos.fields.z -= 10;
+	//
+	// 		queue_new_event(GRANNY_SET_POS, GRANNY, &pos, sizeof(pos));
+	// 	}
+	// }
 
-			queue_new_event(GRANNY_SET_POS, GRANNY, &pos, sizeof(pos));
+	if (igButton("Set Granny TP At Player Position", ImVec2_c{0,0})) {
+		if (get_ai_granny_transform() != nullptr) {
+			get_player_position(&granny_tp_pos);
+		}
+	}
+
+	if (igButton("Set Player TP At Player Position", ImVec2_c{0,0})) {
+		if (get_ai_granny_transform() != nullptr) {
+			get_player_position(&player_tp_pos);
+		}
+	}
+
+	if (igButton("Teleport To Set Positions", ImVec2_c{0,0})) {
+		if (get_ai_granny_transform() != nullptr) {
+			UnityEngine_Vector3_o pos[2] = { granny_tp_pos, player_tp_pos };
+			queue_new_event(ALL_SET_POS, GRANNY, pos, sizeof(pos));
 		}
 	}
 	igEnd();

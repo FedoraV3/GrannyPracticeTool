@@ -55,6 +55,7 @@ extern bool granny_ai_animations_resolved;
 
 // dont know why they put the player position in ai granny
 #define AI_GRANNY_PLAYER_POS 0x288
+#define AI_GRANNY_PLAYER_TRANSFORM 0xD0
 
 // func prototypes
 typedef void (__fastcall *AI_Granny_Start)(void *granny_ai_ptr, const void* method);

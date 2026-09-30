@@ -5,6 +5,7 @@
 #include "events/handler.h"
 
 #include "granny/granny_teleport.h"
+#include "granny/player_teleport.h"
 #include "granny/unityengine/structs.h"
 
 #include <stdbool.h>
@@ -58,6 +59,10 @@ static bool take_event(EVENT_TYPE e_type, EVENT_DATA *out) {
 	return taken;
 }
 
+static bool is_zero_pos(const UnityEngine_Vector3_o *pos) {
+	return pos->fields.x == 0.0f && pos->fields.y == 0.0f && pos->fields.z == 0.0f;
+}
+
 // make sure this only runs on fixedupdate ai_granny! or else......... instant dereference dangling ptr
 void granny_handle_events() {
 	EVENT_DATA ev;
@@ -74,6 +79,18 @@ void granny_handle_events() {
 
 		case PLAYER_SET_POS: {
 			// TODO: add this
+			break;
+		}
+
+		// args are granny pos then player pos, a pos of 0,0,0 is skipped
+		case ALL_SET_POS: {
+			UnityEngine_Vector3_o pos[2];
+			memcpy(pos, ev.args, sizeof(pos));
+
+			if (!is_zero_pos(&pos[0]))
+				teleport_granny_to_position(&pos[0]);
+			if (!is_zero_pos(&pos[1]))
+				teleport_player_to_position(&pos[1]);
 			break;
 		}
 	}

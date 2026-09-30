@@ -12,8 +12,6 @@
 #include "hooks/AI_Granny/ai_granny.h"
 #include "runtime_constants.h"
 
-UnityEngine_Vector3_o last_granny_teleport = {0};
-
 // any unity function is required to be called on the main thread of unity game!
 void get_granny_position(UnityEngine_Vector3_o *out_pos) {
 	// yeah we have snapshot of the last granny update instance so lets just
@@ -24,11 +22,9 @@ void get_granny_position(UnityEngine_Vector3_o *out_pos) {
 }
 
 void teleport_granny_to_position(UnityEngine_Vector3_o *pos) {
-	void* granny_ai = get_ai_granny_transform();
-	if (granny_ai == NULL) {
+	if (curr_granny_ai->granny_ai_transform == NULL) {
 		return;
 	}
 
-	get_granny_position(&last_granny_teleport);
-	((UnityEngine_Transform_Set_Position)(game_assembly_base + UNITYENGINE_TRANSFOM_SET_POSITION))(granny_ai, pos, NULL);
+	((UnityEngine_Transform_Set_Position)(game_assembly_base + UNITYENGINE_TRANSFOM_SET_POSITION))(curr_granny_ai->granny_ai_transform, pos, NULL);
 }

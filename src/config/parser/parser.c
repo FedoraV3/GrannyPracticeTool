@@ -10,6 +10,26 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+// creates { "x": "..", "y": "..", "z": ".." } and adds it under key
+static cJSON* add_vec3(cJSON* root, const char* key, const UnityEngine_Vector3_o* v) {
+	cJSON* obj = cJSON_AddObjectToObject(root, key);
+	if (obj == NULL)
+		return NULL;
+
+	char buf[128];
+	snprintf(buf, sizeof(buf), "%f", v->fields.x);
+	if (cJSON_AddStringToObject(obj, "x", buf) == NULL)
+		return NULL;
+	snprintf(buf, sizeof(buf), "%f", v->fields.y);
+	if (cJSON_AddStringToObject(obj, "y", buf) == NULL)
+		return NULL;
+	snprintf(buf, sizeof(buf), "%f", v->fields.z);
+	if (cJSON_AddStringToObject(obj, "z", buf) == NULL)
+		return NULL;
+
+	return obj;
+}
+
 // returns a null terminated string with the new json obj
 char* create_cfg_json() {
 	cJSON* root = cJSON_CreateObject();
@@ -21,17 +41,10 @@ char* create_cfg_json() {
 
 	cJSON* name = cJSON_CreateString("hash");
 
-	char p_buf[128];
-	snprintf(p_buf, sizeof(p_buf), "%f", player_tp_pos);
-	cJSON* player_tp_pos = cJSON_CreateString(p_buf);
-	cJSON_AddItemToObject(root, "player_tp", player_tp_pos);
+	cJSON* player_tp = add_vec3(root, "player_tp", &player_tp_pos);
+	cJSON* granny_tp = add_vec3(root, "granny_tp", &granny_tp_pos);
 
-	char g_buf[128];
-	snprintf(g_buf, sizeof(g_buf), "%f", granny_tp_pos);
-	cJSON* granny_tp_pos = cJSON_CreateString(g_buf);
-	cJSON_AddItemToObject(root, "granny_tp", granny_tp_pos);
-
-	if (name == NULL || player_tp_pos == NULL || granny_tp_pos == NULL) {
+	if (name == NULL || player_tp == NULL || granny_tp == NULL) {
 		cJSON_Delete(root);
 		return NULL;
 	}

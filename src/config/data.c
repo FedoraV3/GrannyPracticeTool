@@ -6,5 +6,5 @@
 
 const char cfg_pwd[] = "59d7724ee0f9585440ce2c26d3d0d68a";
 
-float player_tp_pos = 0.0f;
-float granny_tp_pos = 0.0f;
+UnityEngine_Vector3_o player_tp_pos = {0};
+UnityEngine_Vector3_o granny_tp_pos = {0};
