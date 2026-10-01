@@ -58,3 +58,34 @@ void* create_ue_string(char* str) {
 	// typedef void* (*il2cpp_string_new_t)(const char*);
 	return ((il2cpp_string_new_t)(game_assembly_base + IL2CPP_STRING_NEW))(str);
 }
+
+bool ue_object_alive(void* obj) {
+	return obj != NULL && ((UnityEngine_Object_Op_Implicit)(game_assembly_base + UNITYENGINE_OBJECT_OP_IMPLICIT))(obj, NULL);
+}
+
+uint32_t ue_handle_new(void* obj) {
+	return obj ? ((il2cpp_gchandle_new_t)(game_assembly_base + IL2CPP_GCHANDLE_NEW))(obj, false) : 0;
+}
+
+void* ue_handle_target(uint32_t handle) {
+	return handle ? ((il2cpp_gchandle_get_target_t)(game_assembly_base + IL2CPP_GCHANDLE_GET_TARGET))(handle) : NULL;
+}
+
+void* ue_handle_alive_target(uint32_t handle) {
+	void* obj = ue_handle_target(handle);
+	return ue_object_alive(obj) ? obj : NULL;
+}
+
+void ue_handle_free(uint32_t* handle) {
+	if (*handle)
+		((il2cpp_gchandle_free_t)(game_assembly_base + IL2CPP_GCHANDLE_FREE))(*handle);
+	*handle = 0;
+}
+
+void ue_handle_set(uint32_t* handle, void* obj) {
+	if (ue_handle_target(*handle) == obj)
+		return;
+
+	ue_handle_free(handle);
+	*handle = ue_handle_new(obj);
+}

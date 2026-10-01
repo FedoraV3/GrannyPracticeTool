@@ -5,6 +5,7 @@
 #include "events/handler.h"
 
 #include "granny/granny_teleport.h"
+#include "granny/item_spawn.h"
 #include "granny/player_teleport.h"
 #include "granny/unityengine/structs.h"
 
@@ -15,16 +16,15 @@
 
 typedef struct EV_DATA {
 	EVENTS event;
-	EVENT_TYPE e_type;
 	uint8_t args[EVENT_ARG_BUF_SIZE];
 } EVENT_DATA;
 
 static SRWLOCK event_lock = SRWLOCK_INIT;
-static EVENT_DATA pending_event;
-static bool has_pending_event = false;
+static EVENT_DATA event_queue[EVENT_QUEUE_SIZE];
+static size_t event_head = 0;
+static size_t event_count = 0;
 
 bool queue_new_event(EVENTS event,
-					 EVENT_TYPE e_type,
 					 const void *args,
 					 size_t args_size) {
 	if (args_size > EVENT_ARG_BUF_SIZE || (args_size > 0 && args == NULL))
@@ -32,26 +32,30 @@ bool queue_new_event(EVENTS event,
 
 	AcquireSRWLockExclusive(&event_lock);
 
-	pending_event.event = event;
-	pending_event.e_type = e_type;
+	bool queued = event_count < EVENT_QUEUE_SIZE;
+	if (queued) {
+		EVENT_DATA *ev = &event_queue[(event_head + event_count) % EVENT_QUEUE_SIZE];
+		ev->event = event;
 
-	memset(pending_event.args, 0, sizeof(pending_event.args));
-	if (args_size > 0)
-		memcpy(pending_event.args, args, args_size);
+		memset(ev->args, 0, sizeof(ev->args));
+		if (args_size > 0)
+			memcpy(ev->args, args, args_size);
 
-	has_pending_event = true;
+		event_count++;
+	}
 
 	ReleaseSRWLockExclusive(&event_lock);
-	return true;
+	return queued;
 }
 
-static bool take_event(EVENT_TYPE e_type, EVENT_DATA *out) {
+static bool take_event(EVENT_DATA *out) {
 	bool taken = false;
 
 	AcquireSRWLockExclusive(&event_lock);
-	if (has_pending_event && pending_event.e_type == e_type) {
-		*out = pending_event;
-		has_pending_event = false;
+	if (event_count > 0) {
+		*out = event_queue[event_head];
+		event_head = (event_head + 1) % EVENT_QUEUE_SIZE;
+		event_count--;
 		taken = true;
 	}
 	ReleaseSRWLockExclusive(&event_lock);
@@ -63,41 +67,48 @@ static bool is_zero_pos(const UnityEngine_Vector3_o *pos) {
 	return pos->fields.x == 0.0f && pos->fields.y == 0.0f && pos->fields.z == 0.0f;
 }
 
-// make sure this only runs on fixedupdate ai_granny! or else......... instant dereference dangling ptr
-void granny_handle_events() {
-	EVENT_DATA ev;
-	if (!take_event(GRANNY, &ev))
-		return;
+static void teleport_to_positions(const uint8_t *args) {
+	UnityEngine_Vector3_o pos[2];
+	memcpy(pos, args, sizeof(pos));
 
-	switch (ev.event) {
-		case GRANNY_SET_POS: {
-			UnityEngine_Vector3_o pos;
-			memcpy(&pos, ev.args, sizeof(pos));
-			teleport_granny_to_position(&pos);
-			break;
-		}
-
-		case PLAYER_SET_POS: {
-			// TODO: add this
-			break;
-		}
-
-		// args are granny pos then player pos, a pos of 0,0,0 is skipped
-		case ALL_SET_POS: {
-			UnityEngine_Vector3_o pos[2];
-			memcpy(pos, ev.args, sizeof(pos));
-
-			if (!is_zero_pos(&pos[0]))
-				teleport_granny_to_position(&pos[0]);
-			if (!is_zero_pos(&pos[1]))
-				teleport_player_to_position(&pos[1]);
-			break;
-		}
-	}
+	if (!is_zero_pos(&pos[0]))
+		teleport_granny_to_position(&pos[0]);
+	if (!is_zero_pos(&pos[1]))
+		teleport_player_to_position(&pos[1]);
 }
 
-void main_tr_handle_events() {
+void handle_events(void) {
 	EVENT_DATA ev;
-	if (!take_event(MAIN_THREAD, &ev))
-		return;
+	while (take_event(&ev)) {
+		switch (ev.event) {
+			// args are granny pos then player pos, a pos of 0,0,0 is skipped
+			case ALL_SET_POS: {
+				teleport_to_positions(ev.args);
+				break;
+			}
+
+			case ITEM_SPAWN_AT: {
+				item_spawn_args args;
+				memcpy(&args, ev.args, sizeof(args));
+				spawn_item_at(args.item, &args.pos);
+				break;
+			}
+
+			case ITEMS_SPAWN_SELECTED: {
+				spawn_selected_items();
+				break;
+			}
+
+			case APPLY_SETUP: {
+				teleport_to_positions(ev.args);
+				spawn_selected_items();
+				break;
+			}
+
+			case ITEM_LOCATIONS_REFRESH: {
+				item_locations_refresh();
+				break;
+			}
+		}
+	}
 }

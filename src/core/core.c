@@ -1,15 +1,14 @@
 #include "core/core.h"
 #include "MinHook.h"
-#include "events/handler.h"
-#include "granny/unityengine/typedefs.h"
 #include "hooks/AI_Granny/ai_granny.h"
 #include "hooks/gui/gui.h"
+#include "hooks/items/items.h"
+#include "hooks/player/player.h"
 #include "hooks/unity/unityengine.h"
 #include "runtime_constants.h"
 
 #include <inttypes.h>
 #include <locale.h>
-#include <stdio.h>
 
 uint8_t * game_assembly_base = NULL;
 
@@ -21,16 +20,10 @@ int core_init() {
 	if (MH_Initialize() != MH_OK) { goto FAIL; }
 	if (!unityengine_install()) { goto FAIL; }
 	if (!ai_granny_hook_install()) { goto FAIL; }
+	if (!items_hook_install()) { goto FAIL; }
+	if (!player_hook_install()) { goto FAIL; }
 	if (!gui_install()) { goto FAIL; }
 	
-	// attach our thread to il2cpp thread
-	/*
-		typedef void* (*il2cpp_domain_get_t)(void);
-		typedef void* (*il2cpp_thread_attach_t)(void* domain);
-	*/
-	
-	// to save memory on variables just do it directly (wow so long)
-	((il2cpp_thread_attach_t)(game_assembly_base + IL2CPP_THREAD_ATTACH))(((il2cpp_domain_get_t)(game_assembly_base + IL2CPP_DOMAIN_GET))());
 	return 1;
 
 	FAIL:

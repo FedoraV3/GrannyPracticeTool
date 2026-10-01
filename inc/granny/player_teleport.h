@@ -6,6 +6,8 @@
 #define GRANNYPRACTICETOOL_PLAYER_TELEPORT_H
 #include "unityengine/structs.h"
 
+#include <stdbool.h>
+
 
 // this looks oddly similar to granny_teleport does it not?
 // these are safe to call since it dereferences directly without calling any unity funcs
@@ -14,7 +16,9 @@
 extern "C" {
 #endif
 
-void get_player_position(UnityEngine_Vector3_o *out_pos);
+void set_player_controller(void* character_controller);
+void update_player_position(void);
+bool get_player_position(UnityEngine_Vector3_o *out_pos);
 void teleport_player_to_position(UnityEngine_Vector3_o *pos);
 
 #ifdef __cplusplus

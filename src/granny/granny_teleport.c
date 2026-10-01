@@ -9,22 +9,32 @@
 #include "core/core.h"
 #include "granny/unityengine/structs.h"
 #include "granny/unityengine/typedefs.h"
+#include "granny/unityengine/ue_object.h"
 #include "hooks/AI_Granny/ai_granny.h"
 #include "runtime_constants.h"
 
-// any unity function is required to be called on the main thread of unity game!
-void get_granny_position(UnityEngine_Vector3_o *out_pos) {
-	// yeah we have snapshot of the last granny update instance so lets just
-	// deep copy because the position will be changed in the next update
-	out_pos->fields.x = curr_granny_ai->transform_pos.fields.x;
-	out_pos->fields.y = curr_granny_ai->transform_pos.fields.y;
-	out_pos->fields.z = curr_granny_ai->transform_pos.fields.z;
-}
+#define NAVMESH_ALL_AREAS (-1)
+#define GRANNY_NAVMESH_SAMPLE_DISTANCE 5.0f
 
 void teleport_granny_to_position(UnityEngine_Vector3_o *pos) {
-	if (curr_granny_ai->granny_ai_transform == NULL) {
+	void* granny = get_ai_granny();
+	if (granny == NULL)
+		return;
+
+	void* transform = ((UnityEngine_Component_Get_Transform)(game_assembly_base + UNITYENGINE_COMPONENT_GET_TRANSFORM))(granny, NULL);
+	if (transform == NULL)
+		return;
+
+	void* agent = *(void**)((uint8_t*)granny + AI_GRANNY_AGENT);
+	if (!ue_object_alive(agent) || !((UnityEngine_Behaviour_Get_Enabled)(game_assembly_base + UNITYENGINE_BEHAVIOUR_GET_ENABLED))(agent, NULL)) {
+		((UnityEngine_Transform_Set_Position)(game_assembly_base + UNITYENGINE_TRANSFOM_SET_POSITION))(transform, pos, NULL);
 		return;
 	}
 
-	((UnityEngine_Transform_Set_Position)(game_assembly_base + UNITYENGINE_TRANSFOM_SET_POSITION))(curr_granny_ai->granny_ai_transform, pos, NULL);
+	UnityEngine_Vector3_o target = *pos;
+	UnityEngine_AI_NavMeshHit_o hit;
+	if (((UnityEngine_NavMesh_Sample_Position)(game_assembly_base + UNITYENGINE_NAVMESH_SAMPLE_POSITION))(&target, &hit, GRANNY_NAVMESH_SAMPLE_DISTANCE, NAVMESH_ALL_AREAS, NULL))
+		target = hit.m_Position;
+
+	((UnityEngine_NavMeshAgent_Warp)(game_assembly_base + UNITYENGINE_NAVMESHAGENT_WARP))(agent, &target, NULL);
 }

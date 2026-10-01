@@ -1,21 +1,19 @@
 #include "hooks/unity/unityengine.h"
 #include "MinHook.h"
 #include "core/core.h"
+#include "granny/item_spawn.h"
+#include "granny/player_teleport.h"
 #include "granny/unityengine/typedefs.h"
 #include "hooks/AI_Granny/ai_granny.h"
 #include "runtime_constants.h"
-#include <stdio.h>
-#include <wchar.h>
 
 UnityEngine_SceneManagement_SceneManager_LoadScene orig_ue_scenemanager_load_scene = NULL;
 
-// typedef int64_t (__fastcall *UnityEngine_SceneManagement_SceneManager_LoadScene)(uint16_t* scene, void* method);
 static int64_t __fastcall detour_ue_scenemanager_load_scene(System_String_o *scene_name, void* method) {
-	if (wcscmp(&scene_name->fields.first_char, L"Menu") == 0) {
-		fprintf(stderr, "AI Granny Invalidated\n");
-		invalidate_ai_granny_ptr();
-	}
-		
+	item_spawn_reset();
+	set_player_controller(NULL);
+	invalidate_ai_granny_ptr();
+
 	return orig_ue_scenemanager_load_scene(scene_name, method);
 }
 

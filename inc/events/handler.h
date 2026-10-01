@@ -9,28 +9,24 @@
 #include <stddef.h>
 
 typedef enum EVENTS {
-	GRANNY_SET_POS = 0x00,
-	PLAYER_SET_POS = 0x01,
-	ALL_SET_POS = 0x02,
+	ALL_SET_POS = 0x00,
+	ITEM_SPAWN_AT = 0x01,
+	ITEMS_SPAWN_SELECTED = 0x02,
+	ITEM_LOCATIONS_REFRESH = 0x03,
+	APPLY_SETUP = 0x04,
 } EVENTS;
 
-typedef enum EVENT_TYPE {
-	GRANNY = 0x00,
-	MAIN_THREAD = 0x01,
-} EVENT_TYPE;
-
 #define EVENT_ARG_BUF_SIZE 32
+#define EVENT_QUEUE_SIZE 16
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 bool queue_new_event(EVENTS event,
-					 EVENT_TYPE e_type,
 					 const void *args,
 					 size_t args_size);
-void granny_handle_events();
-void main_tr_handle_events();
+void handle_events(void);
 
 #ifdef __cplusplus
 }

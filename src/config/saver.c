@@ -8,7 +8,6 @@
 #include "cJSON.h"
 
 #include <Windows.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -21,6 +20,24 @@ static bool add_vec3(cJSON* root, const char* key, const UnityEngine_Vector3_o* 
 		&& cJSON_AddNumberToObject(obj, "z", v->fields.z);
 }
 
+static bool add_item_selections(cJSON* root) {
+	cJSON* obj = cJSON_AddObjectToObject(root, "items");
+	if (!obj)
+		return false;
+
+	item_selection* selections = malloc(sizeof(item_selection) * MAX_ITEM_SELECTIONS);
+	if (!selections)
+		return false;
+
+	int count = copy_item_selections(selections, MAX_ITEM_SELECTIONS);
+	bool ok = true;
+	for (int i = 0; i < count && ok; i++)
+		ok = cJSON_AddNumberToObject(obj, selections[i].location, selections[i].item) != NULL;
+
+	free(selections);
+	return ok;
+}
+
 // builds the json from the values in data.h, pwd is always the first object
 static char* build_cfg_json(void) {
 	cJSON* root = cJSON_CreateObject();
@@ -29,7 +46,8 @@ static char* build_cfg_json(void) {
 
 	if (!cJSON_AddStringToObject(root, "pwd", cfg_pwd)
 		|| !add_vec3(root, "player_tp", &player_tp_pos)
-		|| !add_vec3(root, "granny_tp", &granny_tp_pos)) {
+		|| !add_vec3(root, "granny_tp", &granny_tp_pos)
+		|| !add_item_selections(root)) {
 		cJSON_Delete(root);
 		return NULL;
 	}
@@ -40,16 +58,8 @@ static char* build_cfg_json(void) {
 }
 
 bool save_cfg(const char* cfg_name) {
-	if (!cfg_name || !*cfg_name)
-		return false;
-
-	const char* dir = init_path();
-	if (!dir)
-		return false;
-
 	char file[MAX_PATH];
-	int n = snprintf(file, sizeof(file), "%s\\%s.json", dir, cfg_name);
-	if (n < 0 || n >= (int)sizeof(file))
+	if (!build_cfg_file_path(cfg_name, file, sizeof(file)))
 		return false;
 
 	char* json = build_cfg_json();

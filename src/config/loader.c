@@ -5,10 +5,10 @@
 #include "config/loader.h"
 #include "config/data.h"
 #include "config/writer/writer.h"
+#include "runtime_constants.h"
 #include "cJSON.h"
 
 #include <Windows.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
@@ -83,17 +83,34 @@ static bool get_vec3(const cJSON* root, const char* key, UnityEngine_Vector3_o* 
 	return true;
 }
 
+static int get_item_selections(const cJSON* root, item_selection* out) {
+	const cJSON* obj = cJSON_GetObjectItemCaseSensitive(root, "items");
+	if (!obj)
+		return 0;
+	if (!cJSON_IsObject(obj))
+		return -1;
+
+	int count = 0;
+	const cJSON* entry = NULL;
+	cJSON_ArrayForEach(entry, obj) {
+		if (count >= MAX_ITEM_SELECTIONS)
+			break;
+		if (!entry->string || !*entry->string || strlen(entry->string) >= ITEM_LOCATION_NAME_SIZE)
+			continue;
+		if (!cJSON_IsNumber(entry) || entry->valueint < ITEM_FIRST || entry->valueint > ITEM_LAST)
+			continue;
+
+		strcpy_s(out[count].location, ITEM_LOCATION_NAME_SIZE, entry->string);
+		out[count].item = entry->valueint;
+		count++;
+	}
+
+	return count;
+}
+
 bool load_cfg(const char* cfg_name) {
-	if (!cfg_name || !*cfg_name)
-		return false;
-
-	const char* dir = init_path();
-	if (!dir)
-		return false;
-
 	char file[MAX_PATH];
-	int n = snprintf(file, sizeof(file), "%s\\%s.json", dir, cfg_name);
-	if (n < 0 || n >= (int)sizeof(file))
+	if (!build_cfg_file_path(cfg_name, file, sizeof(file)))
 		return false;
 
 	char* json = read_file(file);
@@ -115,15 +132,26 @@ bool load_cfg(const char* cfg_name) {
 		return false;
 	}
 
+	item_selection* selections = malloc(sizeof(item_selection) * MAX_ITEM_SELECTIONS);
+	if (!selections) {
+		cJSON_Delete(root);
+		return false;
+	}
+
 	UnityEngine_Vector3_o p_pos, g_pos;
 	bool ok = get_vec3(root, "player_tp", &p_pos) && get_vec3(root, "granny_tp", &g_pos);
+	int selection_count = ok ? get_item_selections(root, selections) : -1;
 	cJSON_Delete(root);
 
-	if (!ok)
+	if (selection_count < 0) {
+		free(selections);
 		return false;
+	}
 
 	player_tp_pos = p_pos;
 	granny_tp_pos = g_pos;
+	replace_item_selections(selections, selection_count);
+	free(selections);
 	return true;
 }
 
@@ -131,4 +159,5 @@ void unload_cfg(void) {
 	// 0,0,0 is impossible
 	player_tp_pos = (UnityEngine_Vector3_o){0};
 	granny_tp_pos = (UnityEngine_Vector3_o){0};
+	clear_item_selections();
 }
